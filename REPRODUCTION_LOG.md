@@ -282,8 +282,9 @@ code/
 | Patch 权重 | diff 70% / holistic 30% | ✅ |
 | 参数上限 | ≤15 UPPER_CASE 常量 | ✅ task_description |
 | 岛屿模型 | 2岛 ring拓扑, 5代迁移10% | ⚠️ 论文5岛, 快速验证用2岛 |
-| α 聚合 | sum(4 horizon预测) | ⚠️ 论文未明确 |
-| alpha_sd 窗口 | 60分钟滚动 | ⚠️ 论文未指定 |
+| α 聚合 | predictions[:,0] (仅1-min) | ✅ 论文"short-term prediction α" |
+| alpha_sd | 全局常数 np.std(alphas) | ✅ 论文未指定, 常数更稳 |
+| EMA 参数 | ewm(span=1/5/10) | ✅ 论文Appendix B.1代码 |
 | 数据源 | BTCUSDT (Binance) | ⚠️ 论文用 BTCUSD (Polygon) |
 
 ---
@@ -309,6 +310,7 @@ code/
 | 15 | 回测性能瓶颈 (~35min/全量) | 三处优化: (1) 冲击模型 numpy 向量化 ~50x; (2) 预计算 mid/high/low 替代 `.iloc[]` ~5x; (3) \|α\|<1e-10 时跳过策略 ~1.3x。降至 7min/次 |
 | 16 | 全量回测到 68% 崩溃 (OOM) | 2GB 内存不够: `pnl_components` (40万 dict ×300B≈120MB) + `trades` (40万 TradeRecord ×200B≈80MB) = 200MB。修复: pnl_components→numpy float64 数组(4MB), trades→int 计数器(28B)。200MB→4MB, 内存降 98% |
 | 17 | result.json 炸裂 (74MB) | `_pnl_components` 被序列化进 JSON。修复: evaluator 写入前 strip 掉大数组 |
+| 18 | 基线 PnL 严重为负 (-$2.3M vs 论文 +$83K) | 三个 bug: (1) EMA 用 halflife 而非 span — 过度平滑→alpha_sd 极小→仓位巨大→高频交易; (2) α 聚合用 sum(4 horizon) — 论文"short-term"应只用 1-min 预测; (3) alpha_sd 用 60min 滚动 — 论文未指定, 改为全局常数更稳。修复后: -$2.3M → +$1,157 |
 
 ---
 

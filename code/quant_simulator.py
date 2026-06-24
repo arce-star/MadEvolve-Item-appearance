@@ -130,7 +130,7 @@ class MarketImpactCalculator:
 class AlphaForecaster:
     """
     Ridge regression forecaster — paper Appendix B.1.
-    Features: 3 demeaned EMAs of 1-step returns (halflives 1, 5, 10).
+    Features: 3 EMAs of 1-step returns (span 1, 5, 10).
     Targets: multi-horizon returns at 1, 10, 100, 1000 minutes.
     """
 
@@ -145,9 +145,9 @@ class AlphaForecaster:
         close = ohlcv["close"].astype(float)
         returns = close.pct_change()
         df = pd.DataFrame({
-            "ema_ret_1":  returns.ewm(halflife=1).mean(),
-            "ema_ret_5":  returns.ewm(halflife=5).mean(),
-            "ema_ret_10": returns.ewm(halflife=10).mean(),
+            "ema_ret_1":  returns.ewm(span=1).mean(),
+            "ema_ret_5":  returns.ewm(span=5).mean(),
+            "ema_ret_10": returns.ewm(span=10).mean(),
         }).fillna(0.0)
         return df
 
@@ -169,17 +169,17 @@ class AlphaForecaster:
         self.model = Ridge(alpha=0.5)
         self.model.fit(X, y)
 
-        # Compute alpha stats for normalization
-        preds = self.model.predict(X)
-        alphas = preds.sum(axis=1)  # composite alpha = sum across horizons
+        # Compute alpha stats for normalization (1-min prediction only)
+        alphas = self.model.predict(X)[:, 0]
         self.alpha_mean = float(np.mean(alphas))
         self.alpha_std = float(np.std(alphas))
 
     def predict(self, ohlcv: pd.DataFrame) -> np.ndarray:
-        """Return alpha for each row (sum across 4 horizons)."""
+        """Return alpha: short-term (1-min) prediction only.
+        Other horizons trained jointly for multi-task learning but not mixed in."""
         X = self.compute_features(ohlcv).to_numpy()
         preds = self.model.predict(X)  # (n, 4)
-        return preds.sum(axis=1)       # composite alpha
+        return preds[:, 0]             # only 1-min ahead prediction
 
     def save(self, path: str):
         with open(path, "wb") as f:
@@ -220,7 +220,8 @@ class BacktestSimulator:
 
         # Pre-compute alphas for the entire period
         self.alphas = forecaster.predict(ohlcv)
-        self.alpha_sd = pd.Series(self.alphas).rolling(60).std().fillna(1e-6).to_numpy()
+        # Global alpha_sd: constant across the period (paper doesn't specify window)
+        self.alpha_sd = np.full(len(self.alphas), max(float(np.std(self.alphas)), 1e-8))
 
         self.impact_calc = MarketImpactCalculator()
 
