@@ -62,9 +62,11 @@
 - [x] JSON输出修复 — 大数组不入result.json
 - [x] 基线回测进度条 — evaluator stderr输出+dispatcher不拦截
 - [x] 代码上传GitHub
-- [ ] **Run1/Run2 全量进化 (全年数据, 50候选)** ← 当前
-- [ ] 完整图表生成与论文对照
-- [ ] Run1/Run2 最优策略 OOS 测试
+- [x] **Run1 Full 成功** — 全年数据, 50候选, 3h27m, -$2.3M→+$67K (转正!)
+- [x] Run2 Full — set_limit_order 12行, DeepSeek 74%失败率, score=0
+- [x] 完整图表 (fig/: run1_full/run1_quick/run1_semi/run2_full/run2_quick/run2_semi)
+- [x] MAP-Elites 网格 + 种群动态可视化
+- [ ] Run1 最优策略 OOS 测试 (2025年数据)
 
 ---
 
@@ -234,6 +236,26 @@ code/
 **诊断**: `set_limit_order()` 仅12行纯数学，LLM无法在这么小的空间做有效变异。所有变异要么语法错误，要么产出不交易策略(score=0)。论文Run2也需990候选才找到方向。后续需要扩大搜索空间或合并Run1+Run2为联合进化(Run3)。
 
 **图表**: `python code/analyze_results.py results_run2_semi/20260624_014927 --run-name run2`
+
+---
+
+### Run1 Full (全年, 50候选)
+
+**配置**: 全年 2024 | 50候选 | 2并发 | 2026-06-24 17:58 UTC | 3h27m
+
+| 指标 | 基线 | 最优进化 | 比率 |
+|------|------|---------|------|
+| Impact-Adj PnL | -$2,304,113 | **+$66,849** | 转正 |
+| Sharpe Ratio | -28.94 | 2.29 | — |
+| Calmar Ratio | -1.00 | 2.59 | — |
+| Win Rate | 47.9% | 49.3% | 1.03× |
+| Max Drawdown | $2,305,356 | $25,705 | 0.01× |
+| Trades | 400,857 | 19 | 0.00005× |
+
+**进化轨迹**: Gen1(-$2.3M) → Gen6(-$129K) → Gen8(+$30K转正) → Gen16(+$67K最优)
+**模型**: Flash 30次(46.7%改进率, 产最优解), Pro 4次(50%)
+
+**关键发现**: LLM学会了极度选择性交易(40万笔→19笔), 从高频微调转为只在大机会出手。
 
 ### 模型贡献 (快速版)
 
