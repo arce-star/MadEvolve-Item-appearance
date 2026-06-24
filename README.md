@@ -91,6 +91,8 @@ mkdir -p data
 python code/extract_data.py
 ```
 
+---
+
 ## 运行
 
 ### 快速测试 (2周数据, 30候选, ~25分钟)
