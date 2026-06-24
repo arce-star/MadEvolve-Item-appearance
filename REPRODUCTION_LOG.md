@@ -311,6 +311,7 @@ code/
 | 16 | 全量回测到 68% 崩溃 (OOM) | 2GB 内存不够: `pnl_components` (40万 dict ×300B≈120MB) + `trades` (40万 TradeRecord ×200B≈80MB) = 200MB。修复: pnl_components→numpy float64 数组(4MB), trades→int 计数器(28B)。200MB→4MB, 内存降 98% |
 | 17 | result.json 炸裂 (74MB) | `_pnl_components` 被序列化进 JSON。修复: evaluator 写入前 strip 掉大数组 |
 | 18 | 基线 PnL 严重为负 (-$2.3M vs 论文 +$83K) | 三个 bug: (1) EMA 用 halflife 而非 span — 过度平滑→alpha_sd 极小→仓位巨大→高频交易; (2) α 聚合用 sum(4 horizon) — 论文"short-term"应只用 1-min 预测; (3) alpha_sd 用 60min 滚动 — 论文未指定, 改为全局常数更稳。修复后: -$2.3M → +$1,157 |
+| 19 | Run1 v4 — 修复后全量进化 | 基线 +$1,157, 50候选, 进行中。结果→results/run1_v4/, 图→fig/run1_v4/ |
 
 ---
 
