@@ -55,10 +55,14 @@
 - [x] Run2 快速验证 (1周, 10候选, 7m, score=0 — set_limit_order 太短难以优化)
 - [x] 分析脚本 (analyze_results.py: 图表+指标+模型贡献, fig/目录输出)
 - [x] 代码整理到 code/ 目录
-- [x] Run1 半全量配置 (2周数据, 30候选)
-- [ ] **Run2 半全量 (2周数据, 30候选, 15-25min)** ← 当前
-- [ ] Run1 正式版 (全年数据)
-- [ ] Run2 正式版
+- [x] Run1 半全量 — 2周, 30候选, 缩进修复后最佳较基线改进99.3%
+- [x] Run2 半全量 — set_limit_order 12行代码空间过小, 收敛到0交易
+- [x] 全量回测性能优化 — 42min→7min (numpy向量化+G查表+滑动窗口)
+- [x] 内存优化 — 200MB→4MB (pnl_components numpy化)
+- [x] JSON输出修复 — 大数组不入result.json
+- [x] 基线回测进度条 — evaluator stderr输出+dispatcher不拦截
+- [x] 代码上传GitHub
+- [ ] **Run1/Run2 全量进化 (全年数据, 50候选)** ← 当前
 - [ ] 完整图表生成与论文对照
 - [ ] Run1/Run2 最优策略 OOS 测试
 
@@ -179,6 +183,7 @@ code/
 ├── config_run2.yaml          # Run2 正式配置
 ├── analyze_results.py        # 分析报告: 图表 + 指标表 + 模型贡献
 ├── train_forecaster.py       # 预训练 Ridge Forecaster
+├── benchmark_backtest_v3.py  # 回测性能基准测试
 ├── download_data.py          # Binance 公开数据下载
 ├── extract_data.py           # Zip → Parquet + 合并
 └── check_data.py             # 数据质量检查 + 可视化
