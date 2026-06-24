@@ -1,0 +1,43 @@
+# 数据 (太大, 不上传)
+data/
+
+# 运行结果 (太大)
+results/
+results_*/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# 日志
+logs/
+
+# 临时文件
+*.pkl
+*.db
+*.zip
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 旧版结果 (不传)
+results_run*/
+benchmark_backtest_v2.py
+benchmark_backtest.py
+download_data_gateio.py
+download_data_tushare.py
+
+# 大文件
+*.pdf
+量化.md

@@ -1,0 +1,103 @@
+# ============================================================
+# MadEvolve Config — Run 2: Evolving Order Placement (set_limit_order)
+# ============================================================
+
+# 任务描述 (会注入 LLM prompt)
+task_description: |
+  Optimize a Bitcoin limit-order execution strategy. The strategy receives a target
+  trade decision and must compute a passive limit order. Your goal is to improve
+  the set_limit_order() function to maximize impact-adjusted PnL.
+
+  The strategy has access to:
+  - target["side"]: "B" (buy), "A" (sell), or None (no trade)
+  - target["target_trade_qty"]: desired trade quantity in BTC
+  - target["risk_reduction_mode"]: whether we are unwinding a losing position
+  - target["limit_order_depth"]: suggested quoting depth
+  - state["mid_book"]: current mid price
+  - state["alpha"]: alpha prediction signal
+
+  Key considerations:
+  - Quoting deeper reduces fill probability but improves price
+  - Quoting shallower increases fill probability but risks adverse selection
+  - In risk_reduction_mode, prioritize fast execution over price
+
+  All tunable parameters MUST be declared as UPPER_CASE module-level constants
+  at the top of the EVOLVE-BLOCK. Maximum 15 tunable parameters.
+
+# 评估器脚本
+evaluator_script: /root/autodl-tmp/量化复现/code/evaluator.py
+
+# 初始程序
+init_program_path: /root/autodl-tmp/量化复现/code/baseline_run2.py
+
+# 进化参数
+num_generations: 50
+seed: 42
+
+# LLM 模型配置 (双模型 ensemble)
+models:
+  models:
+    - deepseek-v4-flash
+    - deepseek-v4-pro
+  weights:
+    - 0.75
+    - 0.25
+  temperature: 0.7
+  max_tokens: 8192
+  adaptive_selection: true
+  selection_algorithm: ucb
+  exploration_factor: 1.0
+  decay_rate: 0.99
+
+# Population 配置
+population:
+  partition:
+    enabled: true
+    dimensions:
+      - complexity
+      - diversity
+      - performance
+    bins_per_dimension: 10
+  islands:
+    enabled: true
+    num_islands: 2
+    island_capacity: 15
+    migration_interval: 5
+    migration_rate: 0.1
+    topology: ring
+  archive:
+    enabled: true
+    max_size: 30
+    elite_count: 5
+  selection_strategy: adaptive
+  exploitation_ratio: 0.6
+
+# Patch 策略
+patch_policy:
+  modes:
+    - differential
+    - holistic
+  weights:
+    - 0.7
+    - 0.3
+  adaptive: true
+  stagnation_threshold: 10
+  max_patch_retries: 3
+
+# 执行器配置
+executor:
+  mode: local
+  max_parallel_jobs: 2
+  num_llm_threads: 2
+  timeout: 600
+
+# 存储配置
+storage:
+  db_path: evolution.db
+  checkpoint_interval: 10
+
+# 报告配置
+report:
+  enabled: true
+  output_dir: reports
+  export_format: markdown
