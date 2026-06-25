@@ -1,0 +1,109 @@
+# ============================================================
+# MadEvolve Config — Run 4: Evolving Feature Set (default_calcset)
+# ============================================================
+
+# 任务描述 (会注入 LLM prompt)
+task_description: |
+  You are optimizing feature engineering for a BTC return prediction model.
+  The default_calcset() function maps OHLCV data to a feature matrix.
+
+  The baseline uses 3 simple EMAs of 1-min returns (span 1, 5, 10).
+  A Ridge regression (alpha=0.5) is refit from scratch on 2022-2023 data
+  for every candidate and scored on 2024 validation data.
+
+  The fitness function is a weighted combination:
+  combined_score = 0.4 * R²(10-min) + 0.3 * mean_daily_IC + 0.3 * ICIR
+
+  where:
+  - R²(10-min): R-squared for predicting 10-minute forward returns
+  - mean_daily_IC: mean daily Spearman rank correlation
+  - ICIR: information ratio of daily ICs (mean / std)
+
+  You can add any features derived from OHLCV data (price, volume).
+  All new features should be numerically stable and NaN-free.
+
+  All tunable parameters MUST be declared as UPPER_CASE module-level constants
+  at the top of the EVOLVE-BLOCK.
+
+# 评估器脚本 (MadEvolve 会调用此脚本评估每个候选策略)
+evaluator_script: /root/autodl-tmp/量化复现/code/evaluator_run4_quick.py
+  # 快速版: 用2周 val 数据加速 IC 计算
+  # 不加的话走全年数据
+
+# 初始程序 (基线策略)
+init_program_path: /root/autodl-tmp/量化复现/code/baseline_run4.py
+
+# 进化参数
+num_generations: 3
+seed: 42
+
+# LLM 模型配置 (双模型 ensemble)
+# Flash: 小模型, 增量改进 (类比 Gemini Flash, 28% 改进率)
+# Pro:   大模型, 结构创新 (类比 Claude Opus, 42% 改进率)
+# UCB bandit 自动学习各模型在不同 patch mode 下的成功率
+models:
+  models:
+    - deepseek-v4-flash
+    - deepseek-v4-pro
+  weights:
+    - 0.75     # Flash 权重高, 负责高频增量探索
+    - 0.25     # Pro 权重低, 偶尔做结构重写
+  temperature: 0.7
+  max_tokens: 8192
+  adaptive_selection: true
+  selection_algorithm: ucb
+  exploration_factor: 1.0
+  decay_rate: 0.99
+
+# Population 配置
+population:
+  partition:
+    enabled: true
+    dimensions:
+      - complexity
+      - diversity
+      - performance
+    bins_per_dimension: 10
+  islands:
+    enabled: true
+    num_islands: 2           # 快速模式: 2个岛屿
+    island_capacity: 15
+    migration_interval: 5
+    migration_rate: 0.1
+    topology: ring
+  archive:
+    enabled: true
+    max_size: 30
+    elite_count: 5
+  selection_strategy: adaptive
+  exploitation_ratio: 0.6
+
+# Patch 策略
+patch_policy:
+  modes:
+    - differential
+    - holistic
+  weights:
+    - 0.7
+    - 0.3
+  adaptive: true
+  stagnation_threshold: 10
+  max_patch_retries: 3
+
+# 执行器配置
+executor:
+  mode: local
+  max_parallel_jobs: 2        # 并发评估数
+  num_llm_threads: 2          # LLM producer 线程数
+  timeout: 120                # 每次评估超时 (秒, 训练集大)
+
+# 存储配置
+storage:
+  db_path: evolution.db
+  checkpoint_interval: 10     # 每 10 个显示代保存检查点
+
+# 报告配置
+report:
+  enabled: true
+  output_dir: reports
+  export_format: markdown

@@ -123,11 +123,14 @@ def load_model_stats(results_dir):
 def run_backtest(code_str, data_period="val", use_tiny=False):
     """对给定代码跑回测."""
     if use_tiny:
-        key = "btcusdt_1m_val_tiny.parquet" if data_period == "val" else "btcusdt_1m_val.parquet"
-        data_path = os.path.join(DATA_DIR, key)
-        # For test with tiny, use first week of 2025
-        if data_period == "test":
+        if data_period == "val":
             data_path = os.path.join(DATA_DIR, "btcusdt_1m_val_tiny.parquet")
+        else:
+            data_path = os.path.join(DATA_DIR, "btcusdt_1m_test_tiny.parquet")
+            if not os.path.exists(data_path):
+                # Create tiny test: first week of 2025
+                test = pd.read_parquet(os.path.join(DATA_DIR, "btcusdt_1m_test.parquet"))
+                test[:10080].to_parquet(data_path)  # first week: 7*24*60=10080 rows
     else:
         period_map = {
             "val": os.path.join(DATA_DIR, "btcusdt_1m_val.parquet"),
@@ -215,12 +218,13 @@ def plot_cumulative_pnl(results_dir, baseline_code, best_code, out_dir, use_tiny
             continue
         # Reconstruct equity from PnL components
         for label, data in [("Baseline", bl), ("Evolved", ev)]:
-            eq = np.cumsum([c["pnl_adj"] for c in data.get("_pnl_components", [])])
+            eq = np.array(data.get("_equity_curve", []))
             if len(eq) == 0:
-                # fallback: use sim equity_curve
-                eq = np.array(data.get("_equity_curve", []))
+                pnl_arr = data.get("_pnl_adj_series")
+                if pnl_arr is not None and len(pnl_arr) > 0:
+                    eq = np.cumsum(pnl_arr)
             if len(eq) > 0:
-                ax.plot(range(len(eq)), eq, linewidth=1.0, label=label)
+                ax.plot(eq, linewidth=1.0, label=label)
         ax.set_title(f"{period.upper()} (2024)" if period == "val" else f"{period.upper()} (2025, OOS)")
         ax.set_xlabel("Minute")
         ax.set_ylabel("Cumulative Impact-Adj PnL (USD)")

@@ -62,11 +62,18 @@
 - [x] JSON输出修复 — 大数组不入result.json
 - [x] 基线回测进度条 — evaluator stderr输出+dispatcher不拦截
 - [x] 代码上传GitHub
-- [x] **Run1 Full 成功** — 全年数据, 50候选, 3h27m, -$2.3M→+$67K (转正!)
-- [x] Run2 Full — set_limit_order 12行, DeepSeek 74%失败率, score=0
-- [x] 完整图表 (fig/: run1_full/run1_quick/run1_semi/run2_full/run2_quick/run2_semi)
-- [x] MAP-Elites 网格 + 种群动态可视化
-- [ ] Run1 最优策略 OOS 测试 (2025年数据)
+- [x] Run1 Full v1 — -$2.3M→+$67K (buggy but 验证进化可行)
+- [x] Run1 Full v4 — +$1.2K→+$3.0K (fix后, +160%)
+- [x] Run1 10min — **-$326K→+$34.6K** (+$360K, 10-min α)
+- [x] Run2 Full — set_limit_order 12行, DeepSeek 74%失败率
+- [x] Run2 10min — -$326K→-$87K (改进但未转正)
+- [x] Run4 908候选 — baseline 0.33→1.77 (特征3→20, pre-fix score)
+- [x] Run4 10min demo — score公式修正(clamp+no-intercept)
+- [x] 完整图表 (fig/: run1_v1/run1_v4/run4_908/ +12个目录)
+- [x] 实验报告 EXPERIMENT_REPORT.md
+- [x] 论文score公式确认 (no-intercept R², ICIR clamp+÷5)
+- [ ] Run4 10min 全量 (100候选, 进行中)
+- [ ] Run1/Run2 OOS 测试
 
 ---
 

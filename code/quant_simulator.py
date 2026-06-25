@@ -169,17 +169,16 @@ class AlphaForecaster:
         self.model = Ridge(alpha=0.5)
         self.model.fit(X, y)
 
-        # Compute alpha stats for normalization (1-min prediction only)
-        alphas = self.model.predict(X)[:, 0]
+        # Compute alpha stats (10-min prediction — paper's primary horizon)
+        alphas = self.model.predict(X)[:, 1]
         self.alpha_mean = float(np.mean(alphas))
         self.alpha_std = float(np.std(alphas))
 
     def predict(self, ohlcv: pd.DataFrame) -> np.ndarray:
-        """Return alpha: short-term (1-min) prediction only.
-        Other horizons trained jointly for multi-task learning but not mixed in."""
+        """Return alpha: 10-min ahead prediction (paper's primary horizon)."""
         X = self.compute_features(ohlcv).to_numpy()
         preds = self.model.predict(X)  # (n, 4)
-        return preds[:, 0]             # only 1-min ahead prediction
+        return preds[:, 1]  # 10-min horizon — paper Sec 5.5/6.2
 
     def save(self, path: str):
         with open(path, "wb") as f:
