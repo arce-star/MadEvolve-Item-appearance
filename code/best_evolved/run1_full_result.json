@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "combined_score": 3008.744343336766,
+  "public_metrics": {
+    "pnl_impact_adj": 3008.744343336766,
+    "pnl_net": 3302.3801738235875,
+    "pnl_frictionless": -2141.1907839022383,
+    "total_impact_cost": 293.6358304868055,
+    "total_fee_cost": 889.7328397752434,
+    "total_volume": 5934459.703556214,
+    "num_trades": 33491,
+    "num_minutes": 527040,
+    "sharpe_ratio": 0.6928688830511768,
+    "calmar_ratio": 0.8523684259019756,
+    "win_rate": 0.47858986035215545,
+    "max_drawdown": 3520.2192375928125,
+    "impact_bps": 0.4947979178472553,
+    "annual_return": 3000.523730376838,
+    "equity_volatility": 4330.579426750231
+  },
+  "private_metrics": {
+    "alpha_mean": 2.113240878245798e-07,
+    "alpha_std": 5.379263581865175e-06
+  },
+  "text_feedback": "PnL(adj)=$3,009, Sharpe=0.69, Calmar=0.85, Trades=33491, Impact=0.5bps, Win=47.9%",
+  "execution_time_sec": 482.1839873790741
+}

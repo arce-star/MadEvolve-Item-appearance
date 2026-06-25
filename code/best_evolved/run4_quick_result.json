@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "combined_score": 1.7731619777398155,
+  "public_metrics": {
+    "r2_10min": 0.0006490521193626142,
+    "mean_ic": 0.043665470946005945,
+    "icir": 5.866009052027563,
+    "num_features": 22
+  },
+  "private_metrics": {},
+  "text_feedback": "R\u00b2(10min)=0.0006, IC=0.0437, ICIR=5.87, Features=22, Combined=1.7732",
+  "execution_time_sec": 8.017290353775024
+}
