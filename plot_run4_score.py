@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 results_dir = sys.argv[1] if len(sys.argv) > 1 else "results/run4_quick/20260625_015652"
-out = sys.argv[2] if len(sys.argv) > 2 else "fig/run4/evolution_progress.png"
+import time; ts = time.strftime("%Y%m%d_%H%M%S")
+out = sys.argv[2] if len(sys.argv) > 2 else f"fig/run4/evolution_progress_{ts}.png"
 
 db = sqlite3.connect(os.path.join(results_dir, "evolution.db"))
 rows = db.execute("SELECT generation, combined_score, created_at FROM programs WHERE combined_score IS NOT NULL AND combined_score > -1e9 ORDER BY created_at").fetchall()
